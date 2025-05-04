@@ -1,0 +1,65 @@
+#include <Servo.h>
+
+
+Servo myServo;
+
+
+const int buttonPin = 2; // Button connected to pin 2
+
+
+const int cwSpeed = 180;    // Full clockwise
+const int ccwSpeed = 0;     // Full counterclockwise
+const int stopSpeed = 89;   // <-- STOP TUNED (adjust this number if needed)
+
+
+int currentState = -1;   // -1 = waiting to start; 0 = CW, 1 = stop, 2 = CCW, 3 = stop
+bool buttonHandled = false;
+
+
+void setup() {
+  myServo.attach(9);
+  pinMode(buttonPin, INPUT);
+  myServo.write(stopSpeed); // Start stopped
+}
+
+
+void loop() {
+  int reading = digitalRead(buttonPin);
+
+
+  if (reading == HIGH && !buttonHandled) {
+    if (currentState == -1) {
+      // First press: start sequence
+      currentState = 0;
+    } else {
+      currentState = (currentState + 1) % 4; // Cycle through 0 → 1 → 2 → 3 → 0
+    }
+    buttonHandled = true;
+    delay(200); // Debounce delay
+  } 
+  else if (reading == LOW) {
+    buttonHandled = false;
+  }
+
+
+  // Control servo based on current state
+  if (currentState == 0) {
+    // Clockwise
+    myServo.write(cwSpeed);
+  }
+  else if (currentState == 1) {
+    // Stop
+    myServo.write(stopSpeed);
+  }
+  else if (currentState == 2) {
+    // Counterclockwise
+    myServo.write(ccwSpeed);
+  }
+  else if (currentState == 3) {
+    // Stop
+    myServo.write(stopSpeed);
+  }
+}
+
+
+
